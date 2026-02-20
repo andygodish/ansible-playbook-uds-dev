@@ -1,4 +1,20 @@
 ---
+- name: Bootstrap - install Docker
+  hosts: all
+  gather_facts: true
+  become: true
+
+  # Role: https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
+  roles:
+    - role: geerlingguy.docker
+  vars:
+    # Install Docker CE + plugins (buildx + compose) from Docker's official apt repo.
+    docker_install_compose_plugin: true
+    docker_install_compose: false
+    docker_install_buildx_plugin: true
+    docker_users:
+      - "{{ ansible_user_id }}"
+
 - name: Smoke test + basic report
   hosts: all
   gather_facts: true
