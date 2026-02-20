@@ -1,0 +1,9 @@
+---
+profile: basic
+
+exclude_paths:
+  - roles/
+  - collections/
+  - artifacts/
+  - .ssh-container/
+  - .git/

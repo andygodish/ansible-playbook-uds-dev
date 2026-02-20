@@ -1,0 +1,5 @@
+---
+roles:
+  # Example roles from Ansible Galaxy
+  # - name: geerlingguy.docker
+  #   version: "7.0.2"

@@ -1,0 +1,22 @@
+# Ansible
+*.retry
+.vault_pass
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Collections
+collections/ansible_collections/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
