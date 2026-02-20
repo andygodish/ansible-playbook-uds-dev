@@ -20,3 +20,6 @@ collections/ansible_collections/
 # OS
 .DS_Store
 Thumbs.db
+
+.ssh-container/
+artifacts/
