@@ -26,7 +26,8 @@
 
 - name: Set repo base dir (ansible_user home)
   ansible.builtin.set_fact:
-    repos_base_dir: "{{ getent_passwd[ansible_user][5] }}/src"
+    # getent_passwd fields: [name, passwd, uid, gid, gecos, home, shell]
+    repos_base_dir: "{{ getent_passwd[ansible_user][4] }}/src"
 
 - name: Assert repos_to_clone is provided
   ansible.builtin.assert:
