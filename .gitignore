@@ -23,3 +23,5 @@ Thumbs.db
 
 .ssh-container/
 artifacts/
+
+roles/geerlingguy.docker
