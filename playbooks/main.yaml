@@ -18,6 +18,6 @@
         docker_users:
           - "{{ ansible_user }}"
 
-  post_tasks:
+  tasks:
     - name: Install k3d (pinned)
       ansible.builtin.import_tasks: tasks/install-k3d.yaml
