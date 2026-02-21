@@ -19,5 +19,5 @@
           - "{{ ansible_user }}"
 
   tasks:
-    - name: Install k3d (pinned)
+    - name: Install k3d
       ansible.builtin.import_tasks: tasks/install-k3d.yaml
