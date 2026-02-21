@@ -8,6 +8,10 @@
     k3d_version: "v5.8.3"
     uds_cli_version: "v0.28.2"
 
+    # For testing repo clone task (override as needed)
+    repos_to_clone:
+      - "https://github.com/andygodish/package-k3d.git"
+
   pre_tasks:
     - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
       ansible.builtin.import_tasks: tasks/fix-netplan-dhcp.yaml
