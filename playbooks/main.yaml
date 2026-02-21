@@ -4,6 +4,10 @@
   gather_facts: true
   become: true
 
+  pre_tasks:
+    - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
+      ansible.builtin.import_tasks: tasks/fix-netplan-dhcp.yaml
+
   # Role: https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
   roles:
     - role: geerlingguy.docker
