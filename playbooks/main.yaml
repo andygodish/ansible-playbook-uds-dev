@@ -6,6 +6,7 @@
 
   vars:
     k3d_version: "v5.8.3"
+    uds_cli_version: "v0.28.2"
 
   pre_tasks:
     - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
@@ -21,3 +22,6 @@
   tasks:
     - name: Install k3d
       ansible.builtin.import_tasks: tasks/install-k3d.yaml
+
+    - name: Install UDS CLI (pinned)
+      ansible.builtin.import_tasks: tasks/install-uds-cli.yaml
