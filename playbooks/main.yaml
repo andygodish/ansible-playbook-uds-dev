@@ -11,12 +11,13 @@
     - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
       ansible.builtin.import_tasks: tasks/fix-netplan-dhcp.yaml
 
-    - name: Install k3d (pinned)
-      ansible.builtin.import_tasks: tasks/install-k3d.yaml
-
   # Role: https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
   roles:
     - role: geerlingguy.docker
       vars:
         docker_users:
           - "{{ ansible_user }}"
+
+  post_tasks:
+    - name: Install k3d (pinned)
+      ansible.builtin.import_tasks: tasks/install-k3d.yaml
