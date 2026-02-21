@@ -35,24 +35,48 @@
     _repos_with_dest: "{{ _repos_with_dest | default([]) + [ item | combine({'dest': _dest}) ] }}"
   vars:
     _url: "{{ item.repo }}"
-    # Extract host/org/repo from either https://host/org/repo(.git) or git@host:org/repo(.git)
-    _host: >-
+    # Normalize supported URL forms into a path-like string: host/org/repo
+    # - https://github.com/org/repo(.git)
+    # - git@github.com:org/repo(.git)
+    _pathish: >-
       {{
-        (_url | regex_search('^https?://([^/]+)/', '\\1'))
-        | default(_url | regex_search('^git@([^:]+):', '\\1'), true)
+        (_url
+          | regex_replace('^https?://', '')
+          | regex_replace('^git@', '')
+          | regex_replace(':', '/')
+          | regex_replace('\\.git$', '')
+        )
       }}
-    _org: >-
-      {{
-        (_url | regex_search('^https?://[^/]+/([^/]+)/', '\\1'))
-        | default(_url | regex_search('^git@[^:]+:([^/]+)/', '\\1'), true)
-      }}
-    _repo: >-
-      {{
-        (_url | regex_search('^https?://[^/]+/[^/]+/([^/]+?)(?:\\.git)?$', '\\1'))
-        | default(_url | regex_search('^git@[^:]+:[^/]+/([^/]+?)(?:\\.git)?$', '\\1'), true)
-      }}
+    _host: "{{ (_pathish.split('/'))[0] | default('') }}"
+    _org: "{{ (_pathish.split('/'))[1] | default('') }}"
+    _repo: "{{ (_pathish.split('/'))[2] | default('') }}"
     _dest: "{{ ansible_user_dir }}/src/{{ _host }}/{{ _org }}/{{ _repo }}"
   loop: "{{ _repos_norm }}"
+
+- name: Validate derived clone path components
+  ansible.builtin.assert:
+    that:
+      - _host | length > 0
+      - _org | length > 0
+      - _repo | length > 0
+    fail_msg: "Could not parse repo URL into host/org/repo: {{ _url }}"
+  loop: "{{ _repos_norm }}"
+  loop_control:
+    loop_var: _item
+  vars:
+    _url: "{{ _item.repo }}"
+    _pathish: >-
+      {{
+        (_url
+          | regex_replace('^https?://', '')
+          | regex_replace('^git@', '')
+          | regex_replace(':', '/')
+          | regex_replace('\\.git$', '')
+        )
+      }}
+    _host: "{{ (_pathish.split('/'))[0] | default('') }}"
+    _org: "{{ (_pathish.split('/'))[1] | default('') }}"
+    _repo: "{{ (_pathish.split('/'))[2] | default('') }}"
 
 - name: Ensure ~/src root exists
   ansible.builtin.file:
