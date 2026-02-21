@@ -25,3 +25,9 @@
 
     - name: Install UDS CLI (pinned)
       ansible.builtin.import_tasks: tasks/install-uds-cli.yaml
+
+    - name: Clone repos (optional)
+      ansible.builtin.import_tasks: tasks/clone-repos.yaml
+      when: repos_to_clone is defined
+      tags:
+        - clone-repos

@@ -1,0 +1,85 @@
+---
+# Clone a list of git repos into ~/src/<host>/<org>/<repo>.
+#
+# Input variable: repos_to_clone
+# Supported item formats:
+#   - "https://github.com/andygodish/package-k3d.git"
+#   - "git@github.com:andygodish/package-k3d.git"
+#   - { repo: "https://github.com/andygodish/package-k3d.git", version: "dev" }
+#
+# Notes:
+# - Runs as the SSH user (become: false) so the checkout is owned by that user.
+# - Idempotent: uses ansible.builtin.git.
+
+- name: Ensure git is installed (Ubuntu)
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+  become: true
+
+- name: Assert repos_to_clone is provided
+  ansible.builtin.assert:
+    that:
+      - repos_to_clone is defined
+      - repos_to_clone | length > 0
+    fail_msg: "Set repos_to_clone (list) to clone repos into ~/src/<host>/<org>/<repo>."
+
+- name: Normalize repo items to a list of dicts
+  ansible.builtin.set_fact:
+    _repos_norm: "{{ _repos_norm | default([]) + [ (item is string) | ternary({'repo': item}, item) ] }}"
+  loop: "{{ repos_to_clone }}"
+
+- name: Derive clone destination paths
+  ansible.builtin.set_fact:
+    _repos_with_dest: "{{ _repos_with_dest | default([]) + [ item | combine({'dest': _dest}) ] }}"
+  vars:
+    _url: "{{ item.repo }}"
+    # Extract host/org/repo from either https://host/org/repo(.git) or git@host:org/repo(.git)
+    _host: >-
+      {{
+        (_url | regex_search('^https?://([^/]+)/', '\\1'))
+        | default(_url | regex_search('^git@([^:]+):', '\\1'), true)
+      }}
+    _org: >-
+      {{
+        (_url | regex_search('^https?://[^/]+/([^/]+)/', '\\1'))
+        | default(_url | regex_search('^git@[^:]+:([^/]+)/', '\\1'), true)
+      }}
+    _repo: >-
+      {{
+        (_url | regex_search('^https?://[^/]+/[^/]+/([^/]+?)(?:\\.git)?$', '\\1'))
+        | default(_url | regex_search('^git@[^:]+:[^/]+/([^/]+?)(?:\\.git)?$', '\\1'), true)
+      }}
+    _dest: "{{ ansible_user_dir }}/src/{{ _host }}/{{ _org }}/{{ _repo }}"
+  loop: "{{ _repos_norm }}"
+
+- name: Ensure ~/src root exists
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/src"
+    state: directory
+    mode: "0755"
+  become: false
+
+- name: Ensure per-repo parent directories exist
+  ansible.builtin.file:
+    path: "{{ item.dest | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ _repos_with_dest }}"
+  become: false
+
+- name: Clone/update repos
+  ansible.builtin.git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    version: "{{ item.version | default(omit) }}"
+    update: true
+    force: false
+  loop: "{{ _repos_with_dest }}"
+  become: false
+
+- name: Show cloned repo destinations
+  ansible.builtin.debug:
+    msg: "Cloned {{ item.repo }} -> {{ item.dest }}"
+  loop: "{{ _repos_with_dest }}"
