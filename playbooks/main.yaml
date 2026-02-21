@@ -4,9 +4,15 @@
   gather_facts: true
   become: true
 
+  vars:
+    k3d_version: "v5.8.3"
+
   pre_tasks:
     - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
       ansible.builtin.import_tasks: tasks/fix-netplan-dhcp.yaml
+
+    - name: Install k3d (pinned)
+      ansible.builtin.import_tasks: tasks/install-k3d.yaml
 
   # Role: https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
   roles:
