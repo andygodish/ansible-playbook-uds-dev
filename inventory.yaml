@@ -1,8 +1,8 @@
 ---
 all:
   hosts:
-    example-host:
-      ansible_host: 192.168.1.100
-      ansible_user: your_user
+    uds-dev:
+      ansible_host: 192.168.1.64
+      ansible_user: andy
       ansible_connection: ssh
 

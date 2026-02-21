@@ -1,0 +1,22 @@
+---
+# Install UDS CLI from GitHub releases (pinned version). Ubuntu/amd64-focused.
+# Repo: https://github.com/defenseunicorns/uds-cli
+
+- name: Set UDS CLI download URL (linux/amd64)
+  ansible.builtin.set_fact:
+    uds_cli_url: "https://github.com/defenseunicorns/uds-cli/releases/download/{{ uds_cli_version }}/uds-cli_{{ uds_cli_version }}_Linux_amd64"
+
+- name: Download UDS CLI binary
+  ansible.builtin.get_url:
+    url: "{{ uds_cli_url }}"
+    dest: /usr/local/bin/uds
+    mode: "0755"
+
+- name: Verify UDS CLI installed
+  ansible.builtin.command: uds version
+  register: uds_cli_version_out
+  changed_when: false
+
+- name: Show UDS CLI version
+  ansible.builtin.debug:
+    var: uds_cli_version_out.stdout

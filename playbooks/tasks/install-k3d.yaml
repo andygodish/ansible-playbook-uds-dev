@@ -1,0 +1,21 @@
+---
+# Install k3d from GitHub releases (pinned version). Ubuntu/amd64-focused.
+
+- name: Set k3d download URL (amd64)
+  ansible.builtin.set_fact:
+    k3d_url: "https://github.com/k3d-io/k3d/releases/download/{{ k3d_version }}/k3d-linux-amd64"
+
+- name: Download k3d binary
+  ansible.builtin.get_url:
+    url: "{{ k3d_url }}"
+    dest: /usr/local/bin/k3d
+    mode: "0755"
+
+- name: Verify k3d installed
+  ansible.builtin.command: k3d version
+  register: k3d_version_out
+  changed_when: false
+
+- name: Show k3d version
+  ansible.builtin.debug:
+    var: k3d_version_out.stdout

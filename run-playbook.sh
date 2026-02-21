@@ -4,11 +4,11 @@ set -euo pipefail
 # Runs the bootstrapped playbook (playbooks/main.yaml) using the containerized-ansible image.
 # Default target: macos-local (host.docker.internal)
 
-IMAGE=${IMAGE:-"containerized-ansible:2.20.2"}
-INVENTORY_HOSTS_LIMIT=${INVENTORY_HOSTS_LIMIT:-"macos-local"}
+IMAGE=${IMAGE:-"ghcr.io/andygodish/containerized-ansible:2.20.2-3"}
+INVENTORY_HOSTS_LIMIT=${INVENTORY_HOSTS_LIMIT:-"uds-dev"}
 PLAYBOOK=${PLAYBOOK:-"playbooks/main.yaml"}
 INVENTORY=${INVENTORY:-"inventory.yaml"}
-SSH_KEY=${SSH_KEY:-"$HOME/.ssh/id_ed25519"}
+SSH_KEY=${SSH_KEY:-"$HOME/.ssh/id_ecdsa"}
 
 if [[ ! -f "$SSH_KEY" ]]; then
   echo "ERROR: SSH key not found at $SSH_KEY" >&2

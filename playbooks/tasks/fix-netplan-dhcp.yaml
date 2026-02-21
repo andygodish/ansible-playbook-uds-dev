@@ -1,0 +1,27 @@
+---
+# Fix netplan on Proxmox-cloned Ubuntu VMs that inherited a stale MAC match in
+# /etc/netplan/50-cloud-init.yaml. Without this, systemd-networkd may treat the
+# NIC as "unmanaged", resulting in no DHCP DNS and failures like:
+#   Temporary failure in name resolution
+
+- name: Ensure netplan config for ens18 uses DHCP (no MAC match)
+  ansible.builtin.copy:
+    dest: /etc/netplan/50-cloud-init.yaml
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      network:
+        version: 2
+        ethernets:
+          ens18:
+            dhcp4: true
+  register: netplan_cfg
+
+- name: Netplan generate
+  ansible.builtin.command: netplan generate
+  changed_when: false
+
+- name: Netplan apply (only if config changed)
+  ansible.builtin.command: netplan apply
+  when: netplan_cfg.changed

@@ -1,63 +1,37 @@
 ---
-- name: Smoke test + basic report
+- name: Bootstrap - install Docker
   hosts: all
   gather_facts: true
-  become: false
+  become: true
 
   vars:
-    artifacts_dir: "{{ playbook_dir }}/../artifacts"
-    remote_report_dir: "/tmp/ansible-artifacts"
+    k3d_version: "v5.8.3"
+    uds_cli_version: "v0.28.2"
+
+    # For testing repo clone task (override as needed)
+    repos_to_clone:
+      - "https://github.com/andygodish/package-k3d.git"
 
   pre_tasks:
-    - name: Ensure remote report directory exists
-      ansible.builtin.file:
-        path: "{{ remote_report_dir }}"
-        state: directory
-        mode: "0755"
+    - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
+      ansible.builtin.import_tasks: tasks/fix-netplan-dhcp.yaml
+
+  # Role: https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
+  roles:
+    - role: geerlingguy.docker
+      vars:
+        docker_users:
+          - "{{ ansible_user }}"
 
   tasks:
-    - name: Sanity check - ping
-      ansible.builtin.ping:
+    - name: Install k3d
+      ansible.builtin.import_tasks: tasks/install-k3d.yaml
 
-    - name: Show a short summary
-      ansible.builtin.debug:
-        msg:
-          hostname: "{{ ansible_hostname }}"
-          os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
-          arch: "{{ ansible_architecture }}"
-          python: "{{ ansible_python_version | default('unknown') }}"
+    - name: Install UDS CLI (pinned)
+      ansible.builtin.import_tasks: tasks/install-uds-cli.yaml
 
-    - name: Write facts report on remote
-      ansible.builtin.copy:
-        dest: "{{ remote_report_dir }}/report.yaml"
-        mode: "0644"
-        content: |
-          generated_at: {{ ansible_date_time.iso8601 }}
-          host:
-            hostname: {{ ansible_hostname }}
-            fqdn: {{ ansible_fqdn }}
-            user_id: {{ ansible_user_id }}
-          os:
-            distribution: {{ ansible_distribution }}
-            version: {{ ansible_distribution_version }}
-            kernel: {{ ansible_kernel }}
-
-    - name: Disk usage (human readable)
-      ansible.builtin.command: df -h
-      register: df_out
-      changed_when: false
-
-    - name: Write disk usage on remote
-      ansible.builtin.copy:
-        dest: "{{ remote_report_dir }}/df.txt"
-        mode: "0644"
-        content: "{{ df_out.stdout }}\n"
-
-    - name: Fetch reports back to controller artifacts/
-      ansible.builtin.fetch:
-        src: "{{ remote_report_dir }}/{{ item }}"
-        dest: "{{ artifacts_dir }}/"
-        flat: true
-      loop:
-        - report.yaml
-        - df.txt
+    - name: Clone repos (optional)
+      ansible.builtin.import_tasks: tasks/clone-repos.yaml
+      when: repos_to_clone is defined
+      tags:
+        - clone-repos

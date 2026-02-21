@@ -1,49 +1,59 @@
 # uds-dev
 
-Ansible playbook project for uds-dev.
+Bootstrap an Ubuntu host for UDS development using Ansible (run from the `containerized-ansible` helper).
+
+## What this playbook does (dev branch)
+
+`playbooks/main.yaml` currently:
+
+- installs Docker (via `geerlingguy.docker` vendored role)
+- installs **k3d** from GitHub releases (**pinned** version)
+- installs **UDS CLI** from GitHub releases (**pinned** version)
+- optionally clones a list of repos into: `~/src/<remote-host>/<org>/<repo>`
 
 ## Structure
 
-```
+```bash
 ansible-playbook-uds-dev/
-├── ansible.cfg           # Ansible configuration
-├── inventory.yaml        # Inventory file
-├── run-playbook.sh       # Helper to run via Docker
-├── playbooks/           # Playbook files
-│   └── main.yaml        # Main playbook
-├── roles/               # Roles (vendored via roles/requirements.yaml)
-├── collections/         # Custom collections
-├── vars/                # Variable files
-├── vault/               # Encrypted files
-├── artifacts/           # Output artifacts fetched from targets
-├── group_vars/          # Group-specific variables
-└── host_vars/           # Host-specific variables
+├── ansible.cfg
+├── inventory.yaml
+├── run-playbook.sh
+├── playbooks/
+│   ├── main.yaml
+│   └── tasks/
+│       ├── fix-netplan-dhcp.yaml
+│       ├── install-k3d.yaml
+│       ├── install-uds-cli.yaml
+│       └── clone-repos.yaml
+└── roles/
+    └── requirements.yaml
 ```
 
 ## Usage
 
-### Vendored roles (optional)
+### 1) Configure inventory
 
-If you add role dependencies to `roles/requirements.yaml`, the helper script will automatically vendor them into `./roles/` using `ansible-galaxy`.
+Edit `inventory.yaml`:
 
-### Run the main playbook (recommended)
+- set `ansible_host` (IP/DNS)
+- set `ansible_user`
 
-Use the helper script so you don’t have to remember all the volume mounts:
+Example:
+
+```yaml
+all:
+  hosts:
+    uds-dev:
+      ansible_host: 192.168.1.64
+      ansible_user: andy
+      ansible_connection: ssh
+```
+
+### 2) Run the playbook (recommended)
 
 ```bash
 ./run-playbook.sh
 ```
-
-Defaults:
-- Image: `containerized-ansible:2.20.2` (override with `IMAGE=...`)
-- Target host limit: `macos-local` (override with `INVENTORY_HOSTS_LIMIT=...`)
-- SSH key: `~/.ssh/id_ed25519` (override with `SSH_KEY=...`)
-
-Before first run (macOS host target):
-1. Edit `inventory.yaml` and set `macos-local.ansible_user` to your macOS username.
-2. Ensure your SSH public key is authorized for that user:
-   - Add it to `~/.ssh/authorized_keys` on the Mac
-   - Enable **Remote Login** (System Settings → General → Sharing → Remote Login)
 
 Pass through any extra `ansible-playbook` args:
 
@@ -52,61 +62,35 @@ Pass through any extra `ansible-playbook` args:
 ./run-playbook.sh --check
 ```
 
-### Run the main playbook (manual)
+### 3) Version pins
 
-```bash
-# Example: run from the container, connecting to targets over SSH.
-# NOTE: If you want to target the *macOS host* from the container, use host.docker.internal in inventory.yaml.
-mkdir -p artifacts
+Pins are set explicitly in `playbooks/main.yaml`:
 
-docker run --rm \
-  --entrypoint ansible-playbook \
-  -e ANSIBLE_SSH_ARGS='-F /dev/null -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentityFile=/home/nonroot/.ssh/id_ed25519 -o IdentitiesOnly=yes' \
-  -v $(pwd)/playbooks:/ansible/playbooks \
-  -v $(pwd)/inventory.yaml:/ansible/inventory/inventory.yaml:ro \
-  -v $(pwd)/ansible.cfg:/ansible/ansible.cfg:ro \
-  -v $(pwd)/roles:/ansible/roles \
-  -v $(pwd)/collections:/ansible/collections \
-  -v $(pwd)/artifacts:/ansible/artifacts \
-  -v $(pwd)/.ssh-container:/home/nonroot/.ssh \
-  -v ~/.ssh/id_ed25519:/home/nonroot/.ssh/id_ed25519:ro \
-  containerized-ansible:<tag> \
-  /ansible/playbooks/main.yaml -i /ansible/inventory/inventory.yaml --limit macos-local
+- `k3d_version` (example: `v5.8.3`)
+- `uds_cli_version` (example: `v0.28.2`)
+
+### 4) Clone repos (repeatable)
+
+The clone task takes `repos_to_clone` and clones into:
+
+`/home/<ansible_user>/src/<remote-host>/<org>/<repo>`
+
+Supported formats:
+
+```yaml
+repos_to_clone:
+  - https://github.com/andygodish/package-k3d.git
+  - git@github.com:andygodish/package-monitoring.git
+  - repo: https://github.com/andygodish/package-base.git
+    version: dev
 ```
 
-### Or use the alias (if configured)
+Run only the clone step:
 
 ```bash
-ansible-playbook playbooks/main.yaml
+./run-playbook.sh --tags clone-repos
 ```
 
-## Quick Start
+## Vendored roles
 
-1. Edit `inventory.yaml` with your target hosts
-2. Modify `playbooks/main.yaml` with your tasks
-3. Run the playbook using the command above
-
-## Adding Roles
-
-```bash
-cd roles/
-ansible-role-init my-role
-```
-
-## Variables
-
-- **group_vars/**: Variables for inventory groups
-- **host_vars/**: Variables for specific hosts
-- **vars/**: General variable files
-
-## Vault (Encrypted Secrets)
-
-```bash
-ansible-vault create vault/secrets.yaml
-ansible-vault edit vault/secrets.yaml
-```
-
-Run playbook with vault:
-```bash
-ansible-playbook playbooks/main.yaml --ask-vault-pass
-```
+If you add dependencies to `roles/requirements.yaml`, the helper script will vendor them into `./roles/` using `ansible-galaxy`.

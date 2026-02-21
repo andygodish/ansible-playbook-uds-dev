@@ -1,6 +1,0 @@
----
-collections: []
-  # Example collections
-  # - name: community.general
-  #   version: ">=1.0.0"
-  # - name: ansible.posix
