@@ -5,6 +5,7 @@ Bootstrap an Ubuntu host for UDS development using Ansible (run from the `contai
 ## What this playbook does (dev branch)
 
 `playbooks/main.yaml` currently:
+
 - installs Docker (via `geerlingguy.docker` vendored role)
 - installs **k3d** from GitHub releases (**pinned** version)
 - installs **UDS CLI** from GitHub releases (**pinned** version)
@@ -33,6 +34,7 @@ ansible-playbook-uds-dev/
 ### 1) Configure inventory
 
 Edit `inventory.yaml`:
+
 - set `ansible_host` (IP/DNS)
 - set `ansible_user`
 
@@ -63,6 +65,7 @@ Pass through any extra `ansible-playbook` args:
 ### 3) Version pins
 
 Pins are set explicitly in `playbooks/main.yaml`:
+
 - `k3d_version` (example: `v5.8.3`)
 - `uds_cli_version` (example: `v0.28.2`)
 
