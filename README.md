@@ -4,7 +4,7 @@ Ansible playbook project for uds-dev.
 
 ## Structure
 
-```
+```bash
 ansible-playbook-uds-dev/
 ├── ansible.cfg           # Ansible configuration
 ├── inventory.yaml        # Inventory file
@@ -35,11 +35,13 @@ Use the helper script so you don’t have to remember all the volume mounts:
 ```
 
 Defaults:
+
 - Image: `containerized-ansible:2.20.2` (override with `IMAGE=...`)
 - Target host limit: `macos-local` (override with `INVENTORY_HOSTS_LIMIT=...`)
 - SSH key: `~/.ssh/id_ed25519` (override with `SSH_KEY=...`)
 
 Before first run (macOS host target):
+
 1. Edit `inventory.yaml` and set `macos-local.ansible_user` to your macOS username.
 2. Ensure your SSH public key is authorized for that user:
    - Add it to `~/.ssh/authorized_keys` on the Mac
@@ -107,6 +109,7 @@ ansible-vault edit vault/secrets.yaml
 ```
 
 Run playbook with vault:
+
 ```bash
 ansible-playbook playbooks/main.yaml --ask-vault-pass
 ```
