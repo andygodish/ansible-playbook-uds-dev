@@ -9,10 +9,7 @@
     uds_cli_version: "v0.28.2"
 
     # Docker NFS volume (for uds-k3d persistence)
-    uds_nfs_volume_name: "uds-local-nfs"
-    uds_nfs_server: "192.168.1.55"
-    uds_nfs_export: "/uds-local"
-    uds_nfs_version: "4"
+    # Defaults live in tasks/create-docker-nfs-volume.yaml; override via inventory vars if needed.
 
     # For testing repo clone task (override as needed)
     repos_to_clone:
@@ -43,30 +40,7 @@
         - clone-repos
 
   post_tasks:
-    # Optional: create a Docker NFS volume used by uds-k3d persistence.
-    # This mirrors the manual pattern from package-k3d/docs/nfs-persistence.md.
-    - name: Check if Docker volume exists ({{ uds_nfs_volume_name }})
-      ansible.builtin.command: docker volume inspect {{ uds_nfs_volume_name }}
-      register: uds_nfs_volume_inspect
-      failed_when: false
-      changed_when: false
-
-    - name: Create Docker NFS volume ({{ uds_nfs_volume_name }})
-      ansible.builtin.command: >-
-        docker volume create --driver local
-        --opt type=nfs
-        --opt o=addr={{ uds_nfs_server }},nfsvers={{ uds_nfs_version }},rw
-        --opt device=:{{ uds_nfs_export }}
-        {{ uds_nfs_volume_name }}
-      when: uds_nfs_volume_inspect.rc != 0
-      register: uds_nfs_volume_create
-      changed_when: true
-
-    - name: Show Docker NFS volume details
-      ansible.builtin.command: docker volume inspect {{ uds_nfs_volume_name }}
-      register: uds_nfs_volume_inspect_after
-      changed_when: false
-
-    - name: Debug Docker NFS volume inspect
-      ansible.builtin.debug:
-        var: uds_nfs_volume_inspect_after.stdout
+    - name: Create Docker NFS volume for uds-k3d persistence (optional)
+      ansible.builtin.import_tasks: tasks/create-docker-nfs-volume.yaml
+      tags:
+        - nfs-volume
