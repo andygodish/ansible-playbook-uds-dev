@@ -14,24 +14,49 @@
     update_cache: true
   become: true
 
-- name: Set git user.name
+- name: Lookup home directory for ansible_user
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ ansible_user }}"
+  become: true
+
+- name: Set gitconfig home
+  ansible.builtin.set_fact:
+    _git_home: "{{ getent_passwd[ansible_user][4] }}"
+
+- name: Set git user.name (as ansible_user)
   ansible.builtin.command: git config --global user.name "{{ git_user_name }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
   changed_when: false
 
-- name: Set git user.email
+- name: Set git user.email (as ansible_user)
   ansible.builtin.command: git config --global user.email "{{ git_user_email }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
   changed_when: false
 
-- name: Set git init.defaultBranch
+- name: Set git init.defaultBranch (as ansible_user)
   ansible.builtin.command: git config --global init.defaultBranch "{{ git_init_default_branch }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
   changed_when: false
 
-- name: Set git pull.rebase
+- name: Set git pull.rebase (as ansible_user)
   ansible.builtin.command: git config --global pull.rebase "{{ git_pull_rebase | string }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
   changed_when: false
 
-- name: Show git identity
+- name: Show git identity (as ansible_user)
   ansible.builtin.command: git config --global --list
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
   register: git_config_out
   changed_when: false
 
