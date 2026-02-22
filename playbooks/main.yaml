@@ -11,7 +11,8 @@
 
     # Git defaults (global)
     git_user_name: "Andy Godish"
-    git_user_email: "<your-email>@users.noreply.github.com"
+    # Default noreply email (override with -e git_user_email=... if you use the numeric-id form)
+    git_user_email: "{{ ansible_user }}@users.noreply.github.com"
     git_init_default_branch: "main"
     git_pull_rebase: false
 
