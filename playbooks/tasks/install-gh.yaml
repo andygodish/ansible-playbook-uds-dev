@@ -2,9 +2,12 @@
 # Install GitHub CLI (gh) from GitHub releases (pinned version). Ubuntu/amd64-focused.
 # Repo: https://github.com/cli/cli
 
-- name: Set gh download URL (linux/amd64)
+- name: Set gh version (strip leading v)
   ansible.builtin.set_fact:
     gh_version_no_v: "{{ gh_version | regex_replace('^v', '') }}"
+
+- name: Set gh download URL (linux/amd64)
+  ansible.builtin.set_fact:
     gh_url: "https://github.com/cli/cli/releases/download/v{{ gh_version_no_v }}/gh_{{ gh_version_no_v }}_linux_amd64.tar.gz"
 
 - name: Download gh tarball
