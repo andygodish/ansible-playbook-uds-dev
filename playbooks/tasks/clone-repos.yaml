@@ -43,26 +43,31 @@
 
 - name: Derive clone destination paths
   ansible.builtin.set_fact:
-    _repos_with_dest: "{{ _repos_with_dest | default([]) + [ item | combine({'dest': _dest}) ] }}"
+    _repos_with_dest: "{{ _repos_with_dest | default([]) + [ item | combine({'dest': _dest, '_org': _org, '_repo': _repo}) ] }}"
   vars:
     _url: "{{ item.repo }}"
     # Normalize supported URL forms into a path-like string: host/org/repo
     # - https://github.com/org/repo(.git)
     # - git@github.com:org/repo(.git)
+    # Also strips a trailing slash if present.
     _pathish: >-
       {{
         (_url
           | regex_replace('^https?://', '')
           | regex_replace('^git@', '')
           | regex_replace(':', '/')
+          | regex_replace('/$', '')
           | regex_replace('\\.git$', '')
         )
       }}
     _host: "{{ (_pathish.split('/'))[0] | default('') }}"
     _org: "{{ (_pathish.split('/'))[1] | default('') }}"
-    _repo: "{{ (_pathish.split('/'))[2] | default('') }}"
+    _repo: "{{ (_pathish.split('/'))[2] | default('') | regex_replace('\\.git$', '') }}"
     _dest: "{{ repos_base_dir }}/{{ _host }}/{{ _org }}/{{ _repo }}"
   loop: "{{ _repos_norm }}"
+
+
+# (removed unused task)
 
 - name: Validate derived clone path components
   ansible.builtin.assert:
@@ -82,12 +87,13 @@
           | regex_replace('^https?://', '')
           | regex_replace('^git@', '')
           | regex_replace(':', '/')
+          | regex_replace('/$', '')
           | regex_replace('\\.git$', '')
         )
       }}
     _host: "{{ (_pathish.split('/'))[0] | default('') }}"
     _org: "{{ (_pathish.split('/'))[1] | default('') }}"
-    _repo: "{{ (_pathish.split('/'))[2] | default('') }}"
+    _repo: "{{ (_pathish.split('/'))[2] | default('') | regex_replace('\\.git$', '') }}"
 
 - name: Ensure ~/src root exists
   ansible.builtin.file:
