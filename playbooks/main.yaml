@@ -7,6 +7,13 @@
   vars:
     k3d_version: "v5.8.3"
     uds_cli_version: "v0.28.2"
+    gh_version: "2.87.2"
+
+    # Git defaults (global)
+    git_user_name: "Andy Godish"
+    git_user_email: "<your-email>@users.noreply.github.com"
+    git_init_default_branch: "main"
+    git_pull_rebase: false
 
     # Docker NFS volume (for uds-k3d persistence)
     uds_nfs_volume_name: "uds-dev-nfs"
@@ -30,11 +37,21 @@
           - "{{ ansible_user }}"
 
   tasks:
+    - name: Configure git defaults
+      ansible.builtin.import_tasks: tasks/configure-git.yaml
+      tags:
+        - git-config
+
     - name: Install k3d
       ansible.builtin.import_tasks: tasks/install-k3d.yaml
 
     - name: Install UDS CLI (pinned)
       ansible.builtin.import_tasks: tasks/install-uds-cli.yaml
+
+    - name: Install gh (pinned)
+      ansible.builtin.import_tasks: tasks/install-gh.yaml
+      tags:
+        - gh
 
     - name: Clone repos (optional)
       ansible.builtin.import_tasks: tasks/clone-repos.yaml

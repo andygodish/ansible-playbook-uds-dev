@@ -1,0 +1,40 @@
+---
+# Configure git defaults for this machine.
+#
+# Vars (set in playbooks/main.yaml):
+# - git_user_name
+# - git_user_email
+# - git_init_default_branch
+# - git_pull_rebase
+
+- name: Ensure git is installed (Ubuntu)
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+  become: true
+
+- name: Set git user.name
+  ansible.builtin.command: git config --global user.name "{{ git_user_name }}"
+  changed_when: false
+
+- name: Set git user.email
+  ansible.builtin.command: git config --global user.email "{{ git_user_email }}"
+  changed_when: false
+
+- name: Set git init.defaultBranch
+  ansible.builtin.command: git config --global init.defaultBranch "{{ git_init_default_branch }}"
+  changed_when: false
+
+- name: Set git pull.rebase
+  ansible.builtin.command: git config --global pull.rebase "{{ git_pull_rebase | string }}"
+  changed_when: false
+
+- name: Show git identity
+  ansible.builtin.command: git config --global --list
+  register: git_config_out
+  changed_when: false
+
+- name: Debug git global config
+  ansible.builtin.debug:
+    var: git_config_out.stdout
