@@ -120,16 +120,6 @@
   loop: "{{ _repos_with_dest }}"
   become: false
 
-- name: Convert GitHub HTTPS remotes to SSH (origin)
-  ansible.builtin.command: "git remote set-url origin git@github.com:{{ item._org }}/{{ item._repo }}.git"
-  args:
-    chdir: "{{ item.dest }}"
-  when:
-    - item.repo is match('^https://github\\.com/')
-  loop: "{{ _repos_with_dest }}"
-  become: false
-  changed_when: false
-
 - name: Show cloned repo destinations
   ansible.builtin.debug:
     msg: "Cloned {{ item.repo }} -> {{ item.dest }}"
