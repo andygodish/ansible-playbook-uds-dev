@@ -6,6 +6,9 @@
 # - git_user_email
 # - git_init_default_branch
 # - git_pull_rebase
+# - git_signing_format
+# - git_commit_gpgsign
+# - git_user_signingkey
 
 - name: Ensure git is installed (Ubuntu)
   ansible.builtin.apt:
@@ -51,6 +54,39 @@
   environment:
     HOME: "{{ _git_home }}"
   changed_when: false
+
+- name: Set git gpg.format (as ansible_user)
+  ansible.builtin.command: git config --global gpg.format "{{ git_signing_format }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
+  changed_when: false
+
+- name: Set git commit.gpgsign (as ansible_user)
+  ansible.builtin.command: git config --global commit.gpgsign "{{ git_commit_gpgsign | string }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
+  changed_when: false
+
+- name: Check signing public key exists
+  ansible.builtin.stat:
+    path: "{{ git_user_signingkey }}"
+  register: git_signingkey_stat
+  changed_when: false
+
+- name: Set git user.signingkey (as ansible_user)
+  ansible.builtin.command: git config --global user.signingkey "{{ git_user_signingkey }}"
+  become: false
+  environment:
+    HOME: "{{ _git_home }}"
+  when: git_signingkey_stat.stat.exists
+  changed_when: false
+
+- name: Warn if signing public key is missing
+  ansible.builtin.debug:
+    msg: "Skipping user.signingkey because {{ git_user_signingkey }} does not exist on the target yet. Generate or copy the public key, then re-run --tags git-config."
+  when: not git_signingkey_stat.stat.exists
 
 - name: Show git identity (as ansible_user)
   ansible.builtin.command: git config --global --list
