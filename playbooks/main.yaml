@@ -9,7 +9,10 @@
     uds_cli_version: "v0.28.2"
 
     # Docker NFS volume (for uds-k3d persistence)
-    # Defaults live in tasks/create-docker-nfs-volume.yaml; override via inventory vars if needed.
+    uds_nfs_volume_name: "uds-dev-nfs"
+    uds_nfs_server: "192.168.1.55"
+    uds_nfs_export: "/uds-dev"
+    uds_nfs_version: "4"
 
     # For testing repo clone task (override as needed)
     repos_to_clone:
