@@ -49,13 +49,15 @@
     # Normalize supported URL forms into a path-like string: host/org/repo
     # - https://github.com/org/repo(.git)
     # - git@github.com:org/repo(.git)
+    # Also strips a trailing slash if present.
     _pathish: >-
       {{
         (_url
           | regex_replace('^https?://', '')
           | regex_replace('^git@', '')
           | regex_replace(':', '/')
-          | regex_replace('\\.git$', '')
+          | regex_replace('/$', '')
+          | regex_replace('\\.git/?$', '')
         )
       }}
     _host: "{{ (_pathish.split('/'))[0] | default('') }}"
@@ -82,7 +84,8 @@
           | regex_replace('^https?://', '')
           | regex_replace('^git@', '')
           | regex_replace(':', '/')
-          | regex_replace('\\.git$', '')
+          | regex_replace('/$', '')
+          | regex_replace('\\.git/?$', '')
         )
       }}
     _host: "{{ (_pathish.split('/'))[0] | default('') }}"
