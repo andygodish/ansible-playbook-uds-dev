@@ -24,7 +24,7 @@
 
     # For testing repo clone task (override as needed)
     repos_to_clone:
-      - "https://github.com/andygodish/package-k3d.git"
+      - "git@github.com:andygodish/package-k3d.git"
 
   pre_tasks:
     - name: Fix netplan DHCP/DNS (Proxmox template stale MAC match)
