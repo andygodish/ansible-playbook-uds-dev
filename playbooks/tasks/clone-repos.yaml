@@ -62,7 +62,7 @@
       }}
     _host: "{{ (_pathish.split('/'))[0] | default('') }}"
     _org: "{{ (_pathish.split('/'))[1] | default('') }}"
-    _repo: "{{ (_pathish.split('/'))[2] | default('') }}"
+    _repo: "{{ (_pathish.split('/'))[2] | default('') | regex_replace('\\.git$', '') }}"
     _dest: "{{ repos_base_dir }}/{{ _host }}/{{ _org }}/{{ _repo }}"
   loop: "{{ _repos_norm }}"
 
@@ -90,7 +90,7 @@
       }}
     _host: "{{ (_pathish.split('/'))[0] | default('') }}"
     _org: "{{ (_pathish.split('/'))[1] | default('') }}"
-    _repo: "{{ (_pathish.split('/'))[2] | default('') }}"
+    _repo: "{{ (_pathish.split('/'))[2] | default('') | regex_replace('\\.git$', '') }}"
 
 - name: Ensure ~/src root exists
   ansible.builtin.file:
