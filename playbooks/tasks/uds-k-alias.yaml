@@ -1,0 +1,14 @@
+---
+# Provides a kubectl-like shortcut without installing kubectl separately.
+# Usage after login (or `source /etc/profile`): k get pods
+
+- name: Add UDS kubectl shortcut (k = uds z t k)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/profile.d/uds-k.sh
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # UDS kubectl shortcut
+      k() { uds z t k "$@"; }
