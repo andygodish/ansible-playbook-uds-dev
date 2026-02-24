@@ -36,6 +36,11 @@
     - name: Install UDS CLI (pinned)
       ansible.builtin.import_tasks: tasks/install-uds-cli.yaml
 
+    - name: Add UDS kubectl shortcut (k = uds z t k)
+      ansible.builtin.import_tasks: tasks/uds-k-alias.yaml
+      tags:
+        - uds-k-alias
+
     - name: Clone repos (optional)
       ansible.builtin.import_tasks: tasks/clone-repos.yaml
       when: repos_to_clone is defined
