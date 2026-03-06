@@ -1,0 +1,22 @@
+---
+# Install MinIO Client (mc) from dl.min.io (pinned version). Ubuntu/amd64-focused.
+# Docs: https://min.io/docs/minio/linux/reference/minio-mc.html
+
+- name: Set mc download URL (linux/amd64)
+  ansible.builtin.set_fact:
+    mc_url: "https://dl.min.io/client/mc/release/linux-amd64/archive/mc.{{ mc_version }}"
+
+- name: Download mc binary
+  ansible.builtin.get_url:
+    url: "{{ mc_url }}"
+    dest: /usr/local/bin/mc
+    mode: "0755"
+
+- name: Verify mc installed
+  ansible.builtin.command: mc --version
+  register: mc_version_out
+  changed_when: false
+
+- name: Show mc version
+  ansible.builtin.debug:
+    var: mc_version_out.stdout

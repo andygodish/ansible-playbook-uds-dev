@@ -7,6 +7,7 @@
   vars:
     k3d_version: "v5.8.3"
     uds_cli_version: "v0.28.2"
+    mc_version: "RELEASE.2025-08-13T08-35-41Z"
 
     # Docker NFS volume (for uds-k3d persistence)
     uds_nfs_volume_name: "uds-dev-nfs"
@@ -35,6 +36,11 @@
 
     - name: Install UDS CLI (pinned)
       ansible.builtin.import_tasks: tasks/install-uds-cli.yaml
+
+    - name: Install MinIO Client (mc) (pinned)
+      ansible.builtin.import_tasks: tasks/install-mc.yaml
+      tags:
+        - mc
 
     - name: Add aliases
       ansible.builtin.import_tasks: tasks/alias.yaml
