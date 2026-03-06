@@ -1,0 +1,11 @@
+---
+- name: Add aliases
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/profile.d/alias.sh
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      k() { uds zarf tools kubectl "$@"; }
+      yq() { uds zarf tools yq "$@"; }
