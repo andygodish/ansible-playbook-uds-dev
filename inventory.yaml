@@ -5,4 +5,6 @@ all:
       ansible_host: 192.168.1.64
       ansible_user: andy
       ansible_connection: ssh
+    node:
+      ansible_host: 192.168.1.35
 
